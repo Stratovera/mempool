@@ -1,6 +1,7 @@
 bitcoind:
   image: ${BITCOIND_IMAGE}
   container_name: bitcoind-${NETWORK}
+  hostname: bitcoind
   restart: unless-stopped
   stop_grace_period: 1m
   volumes:
