@@ -1,12 +1,28 @@
 #!/bin/bash
 set -euo pipefail
 
-NETWORKS="${MEMPOOL_NETWORKS}"
+BASE_DIR="${MEMPOOL_BASE_DIR}"
+NETWORK_LIST="${MEMPOOL_NETWORKS}"
 
-for network in ${NETWORKS//,/ }; do
-    dir="${MEMPOOL_BASE_DIR}/${network}"
-    if [[ -d "$dir" ]]; then
-        echo "=== ${network} ==="
-        (cd "$dir" && docker compose ps)
+IFS=',' read -r -a ALL_NETWORKS <<<"$NETWORK_LIST"
+if [[ ${#ALL_NETWORKS[@]} -eq 0 || -z "${ALL_NETWORKS[0]}" ]]; then
+    echo "No networks configured. Edit config/mempool-stack.conf and run sudo make deploy."
+    exit 1
+fi
+
+if [[ $# -gt 0 ]]; then
+    to_check=("$@")
+else
+    to_check=("${ALL_NETWORKS[@]}")
+fi
+
+for network in "${to_check[@]}"; do
+    dir="${BASE_DIR}/${network}"
+    compose="${dir}/docker-compose.yml"
+    if [[ ! -f "$compose" ]]; then
+        echo "Skipping unknown network '${network}'. Available: ${ALL_NETWORKS[*]}"
+        continue
     fi
+    echo "=== ${network} ==="
+    (cd "$dir" && docker compose ps)
 done

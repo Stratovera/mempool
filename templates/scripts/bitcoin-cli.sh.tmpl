@@ -1,13 +1,27 @@
 #!/bin/bash
 set -euo pipefail
 
-network="${1:-mainnet}"
-shift || true
-
-container="bitcoind-${network}"
-if ! docker ps --format '{{.Names}}' | grep -q "^${container}$"; then
-    echo "Container ${container} not running"
+if [[ $# -lt 1 ]]; then
+    echo "Usage: $0 <network> <bitcoin-cli arguments...>"
     exit 1
 fi
 
-docker exec -it "${container}" bitcoin-cli "$@"
+BASE_DIR="${MEMPOOL_BASE_DIR}"
+NETWORK_LIST="${MEMPOOL_NETWORKS}"
+IFS=',' read -r -a ALL_NETWORKS <<<"$NETWORK_LIST"
+
+network="$1"
+shift
+
+compose="${BASE_DIR}/${network}/docker-compose.yml"
+if [[ ! -f "$compose" ]]; then
+    echo "Unknown network '${network}'. Available: ${ALL_NETWORKS[*]}"
+    exit 1
+fi
+
+if [[ $# -eq 0 ]]; then
+    echo "No bitcoin-cli arguments supplied."
+    exit 1
+fi
+
+docker compose -f "$compose" exec bitcoind bitcoin-cli "$@"
