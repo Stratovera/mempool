@@ -24,6 +24,16 @@ Need to pin each network to a specific host IP? Set `MAINNET_BIND_ADDRESS` and `
 
 Exposed ports for bitcoind and electrs are controlled via the per-network config keys (`<NETWORK>_RPC_PORT`, `<NETWORK>_P2P_PORT`, `<NETWORK>_ELECTRS_PORT`), so you can align them with firewall rules or external reverse proxies without touching the templates.
 
+## Credential Management
+- Database passwords live in `config/.secrets/db-password` and are copied to `$MEMPOOL_BASE_DIR/<network>/secrets/db-password-<network>` during `sudo make deploy`. These files are `600` so Docker can bind-mount them as secrets without persisting credentials in version control.
+- `sudo make deploy` now force-recreates every Compose project (`docker compose up -d --force-recreate --remove-orphans`) so refreshed configs or secrets immediately reach the running containers.
+- Use `sudo bin/mempool-deploy rotate-credentials` whenever you need new RPC or MariaDB credentials. The command:
+  1. Reads the existing root password from the secret store.
+  2. Generates new DB + RPC secrets.
+  3. Updates each MariaDB container before writing the new secrets to disk.
+  4. Redeploys both networks so the services consume the rotated values.
+- If the secret store is empty (fresh install), defaults from `config/defaults.conf` (`DB_PASSWORD_FALLBACK`, `DB_ROOT_PASSWORD_FALLBACK`) are written once and you can rotate afterward.
+
 ### Networking & Web/API access
 - Each frontend publishes on `<NETWORK>_WEB_PORT` (default 9090) and proxies `/api/*` to the matching backend container over Docker’s internal network. You can hit the backend directly on `<NETWORK>_API_PORT` (default 9091) for debugging, but the UI always goes through the proxy.
 - Host bindings can overlap across networks by pinning different `*_BIND_ADDRESS` values (e.g., mainnet on `10.10.10.181`, signet on `10.10.10.182`).
