@@ -10,8 +10,8 @@ load_config() {
     local file="$1"
     [[ -f "$file" ]] || return 0
     # shellcheck source=../config/shellcheck-env.sh
-    # shellcheck disable=SC1090
     set -o allexport
+    # shellcheck disable=SC1090
     source "$file"
     set +o allexport
 }
