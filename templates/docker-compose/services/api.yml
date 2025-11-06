@@ -1,0 +1,24 @@
+api:
+  image: ${MEMPOOL_API_IMAGE}
+  container_name: mempool-api-${NETWORK}
+  restart: unless-stopped
+  depends_on:
+    - database
+    - electrs
+  environment:
+    MEMPOOL_NETWORK: ${NETWORK}
+    CORE_RPC_HOST: ${CORE_RPC_HOST}
+    CORE_RPC_PORT: ${CORE_RPC_PORT}
+    CORE_RPC_USERNAME: ${CORE_RPC_USER}
+    CORE_RPC_PASSWORD: ${CORE_RPC_PASS}
+    DATABASE_HOST: database
+    DATABASE_USER: ${DB_USER}
+    DATABASE_PASS: ${DB_PASSWORD}
+    DATABASE_NAME: ${DB_NAME}
+  volumes:
+    - ./mempool-config.json:/backend/mempool-config.json:ro
+    - ${API_DATA_DIR}:/backend/cache
+  ports:
+    - "${HOST_BIND_PREFIX}${API_PORT}:8999"
+  networks:
+    - ${MEMPOOL_NETWORK_NAME}

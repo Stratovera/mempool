@@ -1,0 +1,10 @@
+prometheus:
+  image: ${PROMETHEUS_IMAGE}
+  container_name: prometheus-${NETWORK}
+  restart: unless-stopped
+  volumes:
+    - ${MEMPOOL_BASE_DIR}/${NETWORK}/monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+  ports:
+    - "${HOST_BIND_PREFIX}${PROMETHEUS_HOST_PORT}:9090"
+  networks:
+    - ${MEMPOOL_NETWORK_NAME}

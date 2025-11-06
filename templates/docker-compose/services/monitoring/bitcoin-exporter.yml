@@ -1,0 +1,11 @@
+bitcoin-exporter:
+  image: jvstein/bitcoin-prometheus-exporter
+  container_name: bitcoin-exporter-${NETWORK}
+  restart: unless-stopped
+  environment:
+    BITCOIN_RPC_HOST: ${CORE_RPC_HOST}
+    BITCOIN_RPC_PORT: ${CORE_RPC_PORT}
+    BITCOIN_RPC_USER: ${CORE_RPC_USER}
+    BITCOIN_RPC_PASS: ${CORE_RPC_PASS}
+  networks:
+    - ${MEMPOOL_NETWORK_NAME}

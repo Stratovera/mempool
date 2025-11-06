@@ -1,0 +1,22 @@
+#!/bin/bash
+set -euo pipefail
+
+NETWORKS="${MEMPOOL_NETWORKS}"
+TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
+BACKUP_DIR="${MEMPOOL_BASE_DIR}/backups/${TIMESTAMP}"
+mkdir -p "$BACKUP_DIR"
+
+for network in ${NETWORKS//,/ }; do
+    compose_file="${MEMPOOL_BASE_DIR}/${network}/docker-compose.yml"
+    out_dir="${BACKUP_DIR}/${network}"
+    mkdir -p "$out_dir"
+
+    echo "Dumping MariaDB for ${network}"
+    docker compose -f "$compose_file" exec -T database \
+        mysqldump -u${DB_USER} -p${DB_PASSWORD} ${DB_NAME} > "${out_dir}/database.sql"
+
+    echo "Archiving configs for ${network}"
+    tar -C "${MEMPOOL_BASE_DIR}/${network}" -czf "${out_dir}/config.tar.gz" mempool-config.json docker-compose.yml
+done
+
+echo "Backup stored under ${BACKUP_DIR}"

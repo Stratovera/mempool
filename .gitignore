@@ -1,0 +1,28 @@
+# macOS
+.DS_Store
+
+# Editors
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# Logs & backups
+*.log
+*.bak
+*.tmp
+
+# Generated artifacts
+/opt/
+backups/
+archive/
+GEMINI.md
+CLAUDE.md
+.idea
+.vscode
+.tmp
+config/mempool-stack.conf
+backups/
+*.log
+node_modules/
+docker-compose.override.yml

@@ -1,0 +1,13 @@
+#!/bin/bash
+set -euo pipefail
+
+network="${1:-mainnet}"
+shift || true
+
+container="bitcoind-${network}"
+if ! docker ps --format '{{.Names}}' | grep -q "^${container}$"; then
+    echo "Container ${container} not running"
+    exit 1
+fi
+
+docker exec -it "${container}" bitcoin-cli "$@"

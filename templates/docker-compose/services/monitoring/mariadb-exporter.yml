@@ -1,0 +1,10 @@
+mariadb-exporter:
+  image: prom/mysqld-exporter
+  container_name: mariadb-exporter-${NETWORK}
+  restart: unless-stopped
+  environment:
+    DATA_SOURCE_NAME: ${DB_USER}:${DB_PASSWORD}@(database:3306)/
+  depends_on:
+    - database
+  networks:
+    - ${MEMPOOL_NETWORK_NAME}

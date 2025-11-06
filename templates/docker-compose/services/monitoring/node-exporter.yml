@@ -1,0 +1,8 @@
+node-exporter:
+  image: prom/node-exporter:latest
+  container_name: node-exporter-${NETWORK}
+  restart: unless-stopped
+  pid: host
+  network_mode: host
+  command:
+    - --path.rootfs=/

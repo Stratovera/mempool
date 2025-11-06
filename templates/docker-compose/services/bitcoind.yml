@@ -1,0 +1,14 @@
+bitcoind:
+  image: ${BITCOIND_IMAGE}
+  container_name: bitcoind-${NETWORK}
+  restart: unless-stopped
+  stop_grace_period: 1m
+  volumes:
+    - ${BITCOIN_DATA_DIR}:/var/lib/bitcoin
+    - ./bitcoin.conf:/var/lib/bitcoin/bitcoin.conf:ro
+  command: >
+    bitcoind -conf=/var/lib/bitcoin/bitcoin.conf
+  ports:
+    - "${HOST_BIND_PREFIX}${CORE_RPC_PORT}:${CORE_RPC_PORT}"
+  networks:
+    - ${MEMPOOL_NETWORK_NAME}
