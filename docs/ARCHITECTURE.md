@@ -5,7 +5,7 @@
 - `lib/config.sh` — config loading, interactive setup, validation, `get_networks`
 - `lib/prerequisites.sh` — dependency checks for docker, compose, envsubst, openssl
 - `lib/directories.sh` — disk validation, directory creation with correct ownership (Fix 1.1/2.1/2.2)
-- `lib/bitcoind.sh` — in-memory RPC credential generation and bitcoin.conf rendering (Fix 1.3)
+- `lib/bitcoind.sh` — RPC credential generation, persistence under `${MEMPOOL_BASE_DIR}/${network}/.rpc_credentials`, and bitcoin.conf rendering (Fix 1.3)
 - `lib/mempool.sh` — renders `mempool-config.json` per network
 - `lib/docker-compose.sh` — exposes `render_template` and assembles docker-compose.yml from service templates
 - `lib/firewall.sh` — optional UFW allow rules for all exposed ports

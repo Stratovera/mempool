@@ -14,7 +14,11 @@ All settings are shell-style `KEY=value` pairs. Defaults live in `config/default
 - `MIN_DISK_GB` — minimum free disk required before deployment proceeds
 
 ## Per-Network Ports
-`<NETWORK>_WEB_PORT`, `<NETWORK>_API_PORT`, `<NETWORK>_RPC_PORT`, `<NETWORK>_ELECTRS_PORT`, `<NETWORK>_P2P_PORT`, `<NETWORK>_PROMETHEUS_PORT`, `<NETWORK>_GRAFANA_PORT` (e.g., `MAINNET_WEB_PORT=8080`). Validation in `lib/config.sh` ensures they stay in 1024-65535.
+`<NETWORK>_WEB_PORT`, `<NETWORK>_API_PORT`, `<NETWORK>_RPC_PORT`, `<NETWORK>_ELECTRS_PORT`, `<NETWORK>_P2P_PORT`, `<NETWORK>_PROMETHEUS_PORT`, `<NETWORK>_GRAFANA_PORT` (e.g., `MAINNET_WEB_PORT=9090`). Validation in `lib/config.sh` ensures they stay in 1024-65535.
+
+Notes:
+- The frontend publishes `<NETWORK>_WEB_PORT` and proxies `/api/*` to the backend container. `<NETWORK>_API_PORT` still exposes the backend directly for low-level debugging but is not needed for the UI to function.
+- Because each network can set its own `*_BIND_ADDRESS`, you can reuse the same port numbers for mainnet and signet while pinning them to different host IPs.
 
 ## Database
 `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_ROOT_PASSWORD` control the MariaDB container and exporter connection string.

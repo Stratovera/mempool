@@ -24,6 +24,15 @@ Need to pin each network to a specific host IP? Set `MAINNET_BIND_ADDRESS` and `
 
 Exposed ports for bitcoind and electrs are controlled via the per-network config keys (`<NETWORK>_RPC_PORT`, `<NETWORK>_P2P_PORT`, `<NETWORK>_ELECTRS_PORT`), so you can align them with firewall rules or external reverse proxies without touching the templates.
 
+### Networking & Web/API access
+- Each frontend publishes on `<NETWORK>_WEB_PORT` (default 9090) and proxies `/api/*` to the matching backend container over Docker’s internal network. You can hit the backend directly on `<NETWORK>_API_PORT` (default 9091) for debugging, but the UI always goes through the proxy.
+- Host bindings can overlap across networks by pinning different `*_BIND_ADDRESS` values (e.g., mainnet on `10.10.10.181`, signet on `10.10.10.182`).
+- To verify connectivity from another host:
+  ```bash
+  curl http://10.10.10.181:9090/api/v1/statistics/2h   # mainnet
+  curl http://10.10.10.182:9090/api/v1/statistics/2h   # signet
+  ```
+
 ## Repository Layout
 ```
 bin/                # mempool-deploy CLI entrypoint
