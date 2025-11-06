@@ -36,6 +36,8 @@ prepare_network_env() {
     export API_PORT="${!API_PORT_VAR}"
     local electrs_var="${upper}_ELECTRS_PORT"
     export ELECTRS_PORT="${!electrs_var}"
+    local p2p_var="${upper}_P2P_PORT"
+    export P2P_PORT="${!p2p_var}"
     if [[ "$network" == "mainnet" ]]; then
         export ELECTRS_COOKIE_PATH=".cookie"
     else

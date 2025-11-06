@@ -14,7 +14,7 @@ All settings are shell-style `KEY=value` pairs. Defaults live in `config/default
 - `MIN_DISK_GB` — minimum free disk required before deployment proceeds
 
 ## Per-Network Ports
-`<NETWORK>_WEB_PORT`, `<NETWORK>_API_PORT`, `<NETWORK>_RPC_PORT`, `<NETWORK>_ELECTRS_PORT`, `<NETWORK>_PROMETHEUS_PORT`, `<NETWORK>_GRAFANA_PORT` (e.g., `MAINNET_WEB_PORT=8080`). Validation in `lib/config.sh` ensures they stay in 1024-65535.
+`<NETWORK>_WEB_PORT`, `<NETWORK>_API_PORT`, `<NETWORK>_RPC_PORT`, `<NETWORK>_ELECTRS_PORT`, `<NETWORK>_P2P_PORT`, `<NETWORK>_PROMETHEUS_PORT`, `<NETWORK>_GRAFANA_PORT` (e.g., `MAINNET_WEB_PORT=8080`). Validation in `lib/config.sh` ensures they stay in 1024-65535.
 
 ## Database
 `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_ROOT_PASSWORD` control the MariaDB container and exporter connection string.
