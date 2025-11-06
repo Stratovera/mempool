@@ -36,8 +36,12 @@ prepare_network_env() {
     export API_PORT="${!API_PORT_VAR}"
     local electrs_var="${upper}_ELECTRS_PORT"
     export ELECTRS_PORT="${!electrs_var}"
-    export CORE_RPC_USER="$(get_rpc_user "$network")"
-    export CORE_RPC_PASS="$(get_rpc_password "$network")"
+    local rpc_user
+    rpc_user="$(get_rpc_user "$network")"
+    export CORE_RPC_USER="$rpc_user"
+    local rpc_pass
+    rpc_pass="$(get_rpc_password "$network")"
+    export CORE_RPC_PASS="$rpc_pass"
     export CORE_RPC_HOST="$BITCOIND_RPC_HOST"
     local rpc_var="${upper}_RPC_PORT"
     export CORE_RPC_PORT="${!rpc_var}"

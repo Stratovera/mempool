@@ -11,9 +11,7 @@ create_mempool_config() {
     local rpc_port_var="${upper}_RPC_PORT"
     local rpc_port="${!rpc_port_var}"
 
-    if [[ -z "${RPC_USERS[$network]:-}" ]]; then
-        generate_rpc_credentials "$network"
-    fi
+    ensure_rpc_credentials "$network"
 
     CORE_RPC_HOST="$rpc_host" \
     CORE_RPC_PORT="$rpc_port" \
