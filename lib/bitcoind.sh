@@ -86,9 +86,9 @@ create_bitcoind_config() {
     upper="$(to_upper "$network")"
     local rpc_port_var="${upper}_RPC_PORT"
     local rpc_port="${!rpc_port_var}"
-    local network_flag="mainnet=1"
+    local network_flag=""
     if [[ "$network" == "signet" ]]; then
-        network_flag="signet=1"
+        network_flag=$'signet=1\n[signet]'
     fi
 
     RPC_USER="$(get_rpc_user "$network")" \
