@@ -86,6 +86,23 @@ create_bitcoind_config() {
     upper="$(to_upper "$network")"
     local rpc_port_var="${upper}_RPC_PORT"
     local rpc_port="${!rpc_port_var}"
+    local dbcache_var="${upper}_BITCOIND_DBCACHE"
+    local max_conn_var="${upper}_BITCOIND_MAX_CONNECTIONS"
+    local max_out_var="${upper}_BITCOIND_MAX_OUTBOUND"
+    local max_upload_var="${upper}_BITCOIND_MAX_UPLOAD_TARGET"
+    local parallel_var="${upper}_BITCOIND_PARALLELISM"
+    local extra_lines=""
+    append_bitcoind_line() {
+        local key="$1" value="$2"
+        if [[ -n "${value:-}" ]]; then
+            extra_lines+="${key}=${value}"$'\n'
+        fi
+    }
+    append_bitcoind_line "dbcache" "${!dbcache_var:-}"
+    append_bitcoind_line "maxconnections" "${!max_conn_var:-}"
+    append_bitcoind_line "maxoutboundconnections" "${!max_out_var:-}"
+    append_bitcoind_line "maxuploadtarget" "${!max_upload_var:-}"
+    append_bitcoind_line "par" "${!parallel_var:-}"
     local network_flag=""
     if [[ "$network" == "signet" ]]; then
         network_flag=$'signet=1\n[signet]'
@@ -95,6 +112,7 @@ create_bitcoind_config() {
     RPC_PASS="$(get_rpc_password "$network")" \
     RPC_PORT="$rpc_port" \
     NETWORK_CONFIG="$network_flag" \
+    BITCOIND_EXTRA_LINES="$extra_lines" \
     envsubst < "$template" > "$output"
 
     chmod 600 "$output"

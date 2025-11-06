@@ -33,6 +33,29 @@ Exposed ports for bitcoind and electrs are controlled via the per-network config
   curl http://10.10.10.182:9090/api/v1/statistics/2h   # signet
   ```
 
+### Bitcoind performance overrides
+The bitcoind template now respects optional per-network tuning variables defined in `config/mempool-stack.conf`:
+
+```
+<NETWORK>_BITCOIND_DBCACHE
+<NETWORK>_BITCOIND_MAX_CONNECTIONS
+<NETWORK>_BITCOIND_MAX_OUTBOUND
+<NETWORK>_BITCOIND_MAX_UPLOAD_TARGET
+<NETWORK>_BITCOIND_PARALLELISM   # maps to bitcoind's "par" option
+```
+
+Set them in your config (e.g., `MAINNET_BITCOIND_DBCACHE=8192`) and re-run `sudo make deploy`; the rendered `bitcoin.conf` picks up the parameters automatically. Example for a 10 Gbps host:
+
+```bash
+MAINNET_BITCOIND_DBCACHE=8192
+MAINNET_BITCOIND_MAX_CONNECTIONS=256
+MAINNET_BITCOIND_MAX_OUTBOUND=32
+MAINNET_BITCOIND_MAX_UPLOAD_TARGET=0
+MAINNET_BITCOIND_PARALLELISM=32
+```
+
+Duplicate the lines with `SIGNET_...` prefixes if you want the same policy there. Leave any variable blank to fall back to Bitcoin Core defaults.
+
 ## Repository Layout
 ```
 bin/                # mempool-deploy CLI entrypoint
