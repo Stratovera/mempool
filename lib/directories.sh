@@ -44,6 +44,7 @@ create_network_directories() {
     mkdir -p "${net_dir}/monitoring/prometheus"
     mkdir -p "${net_dir}/monitoring/grafana/provisioning/datasources"
     mkdir -p "${net_dir}/monitoring/grafana/provisioning/dashboards"
+    rm -f "${net_dir}/mempool-config.json"
 
     log_info "Prepared directories for ${network}"
 }
