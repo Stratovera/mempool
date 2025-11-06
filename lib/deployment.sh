@@ -39,13 +39,13 @@ deploy_network() {
 }
 
 update_database_credentials() {
-    local network="$1" old_db_password="$2" old_root_password="$3"
+    local network="$1" old_root_password="$2" new_db_password="$3" new_root_password="$4"
     local compose_path="${MEMPOOL_BASE_DIR}/${network}/docker-compose.yml"
     [[ -f "$compose_path" ]] || { log_warn "No compose file for ${network}; skipping database credential update"; return; }
     [[ -n "$old_root_password" ]] || die "Cannot rotate database credentials without existing root password"
     local statement
-    statement="ALTER USER '${DB_USER}'@'%' IDENTIFIED BY '${DB_PASSWORD}'; "
-    statement+="ALTER USER 'root'@'%' IDENTIFIED BY '${DB_ROOT_PASSWORD}'; "
+    statement="ALTER USER '${DB_USER}'@'%' IDENTIFIED BY '${new_db_password}'; "
+    statement+="ALTER USER 'root'@'%' IDENTIFIED BY '${new_root_password}'; "
     statement+="FLUSH PRIVILEGES;"
     if ! docker compose -f "$compose_path" exec -T database mysql -uroot -p"${old_root_password}" -e "$statement"; then
         die "Failed to update database credentials for ${network}"
@@ -57,9 +57,17 @@ rotate_credentials() {
     require_root
     ensure_internal_credentials
     audit_event "CREDENTIAL_ROTATION_STARTED" "networks=$(get_networks)"
-    local old_db_password=""
-    local old_root_password=""
-    rotate_db_credentials old_db_password old_root_password
+    local old_db_password
+    local old_root_password
+    old_db_password="$(load_secret_value "db-password" 2>/dev/null || echo "${DB_PASSWORD:-}")"
+    old_root_password="$(load_secret_value "db-root-password" 2>/dev/null || echo "${DB_ROOT_PASSWORD:-}")"
+    [[ -n "$old_db_password" ]] || die "Missing existing database password"
+    [[ -n "$old_root_password" ]] || die "Missing existing root password"
+
+    local new_db_password
+    local new_root_password
+    new_db_password="$(generate_secret 48)"
+    new_root_password="$(generate_secret 48)"
 
     local network
     for network in $(get_networks); do
@@ -67,7 +75,18 @@ rotate_credentials() {
     done
 
     for network in $(get_networks); do
-        update_database_credentials "$network" "$old_db_password" "$old_root_password"
+        update_database_credentials "$network" "$old_root_password" "$new_db_password" "$new_root_password"
+    done
+
+    DB_PASSWORD="$new_db_password"
+    DB_ROOT_PASSWORD="$new_root_password"
+    persist_secret_value "db-password" "$DB_PASSWORD"
+    persist_secret_value "db-root-password" "$DB_ROOT_PASSWORD"
+    record_credential_rotation "db-password"
+    record_credential_rotation "db-root-password"
+    audit_event "DB_CREDENTIAL_ROTATED" "type=application"
+
+    for network in $(get_networks); do
         deploy_network "$network"
     done
 
