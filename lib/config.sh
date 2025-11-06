@@ -37,11 +37,30 @@ interactive_config() {
         ENABLE_SSL=false
     fi
 
-    read -r -p "Mainnet bind address (blank = all interfaces) [${MAINNET_BIND_ADDRESS}]: " ans || true
-    MAINNET_BIND_ADDRESS="${ans:-$MAINNET_BIND_ADDRESS}"
+    local default_separate_ips="y"
+    [[ -n "${MAINNET_BIND_ADDRESS}" && -n "${SIGNET_BIND_ADDRESS}" && "${MAINNET_BIND_ADDRESS}" == "${SIGNET_BIND_ADDRESS}" ]] && default_separate_ips="n"
+    if prompt_yes_no "Use different host IPs for mainnet and signet?" "$default_separate_ips"; then
+        read -r -p "Mainnet bind address (blank = all interfaces) [${MAINNET_BIND_ADDRESS}]: " ans || true
+        MAINNET_BIND_ADDRESS="${ans:-$MAINNET_BIND_ADDRESS}"
+        read -r -p "Signet bind address (blank = all interfaces) [${SIGNET_BIND_ADDRESS}]: " ans || true
+        SIGNET_BIND_ADDRESS="${ans:-$SIGNET_BIND_ADDRESS}"
+    else
+        read -r -p "Shared bind address for both networks (blank = all interfaces) [${MAINNET_BIND_ADDRESS:-$SIGNET_BIND_ADDRESS}]: " ans || true
+        local shared="${ans:-${MAINNET_BIND_ADDRESS:-$SIGNET_BIND_ADDRESS}}"
+        MAINNET_BIND_ADDRESS="$shared"
+        SIGNET_BIND_ADDRESS="$shared"
+        log_warn "Mainnet and signet will share ${shared:-0.0.0.0}; ensure each network uses unique ports."
+    fi
 
-    read -r -p "Signet bind address (blank = all interfaces) [${SIGNET_BIND_ADDRESS}]: " ans || true
-    SIGNET_BIND_ADDRESS="${ans:-$SIGNET_BIND_ADDRESS}"
+    read -r -p "Mainnet web port [${MAINNET_WEB_PORT}]: " ans || true
+    MAINNET_WEB_PORT="${ans:-$MAINNET_WEB_PORT}"
+    read -r -p "Mainnet API port [${MAINNET_API_PORT}]: " ans || true
+    MAINNET_API_PORT="${ans:-$MAINNET_API_PORT}"
+
+    read -r -p "Signet web port [${SIGNET_WEB_PORT}]: " ans || true
+    SIGNET_WEB_PORT="${ans:-$SIGNET_WEB_PORT}"
+    read -r -p "Signet API port [${SIGNET_API_PORT}]: " ans || true
+    SIGNET_API_PORT="${ans:-$SIGNET_API_PORT}"
 
     local ext_default="n"
     [[ "${USE_EXTERNAL_BITCOIND}" == true ]] && ext_default="y"
