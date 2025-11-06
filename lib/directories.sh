@@ -29,7 +29,7 @@ create_network_directories() {
     mkdir -p "${net_dir}/nginx"
     mkdir -p "${data_dir}/mysql"
     mkdir -p "${data_dir}/api"
-    mkdir -p "${data_dir}/electrs"
+    mkdir -p "${data_dir}/electrs/db"
     mkdir -p "${net_dir}/logs"
 
     if [[ "${USE_EXTERNAL_BITCOIND}" != true ]]; then
