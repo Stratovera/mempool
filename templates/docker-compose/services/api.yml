@@ -13,20 +13,10 @@ api:
     ELECTRUM_PORT: 50001
     ELECTRUM_TLS_ENABLED: "false"
     DATABASE_HOST: database
-    CORE_RPC_COOKIE: "${USE_RPC_COOKIE}"
-    CORE_RPC_COOKIE_PATH: ${BITCOIN_COOKIE_CONTAINER_PATH}
-    BITCOIN_COOKIE_PATH: ${BITCOIN_COOKIE_CONTAINER_PATH}
-    USE_RPC_COOKIE: "${USE_RPC_COOKIE}"
-    BITCOIN_COOKIE_WAIT_SECONDS: "${COOKIE_WAIT_SECONDS}"
   volumes:
     - ./mempool-config.json:/backend/mempool-config.json:rw
     - ${API_DATA_DIR}:/backend/cache
-    - ${BITCOIN_COOKIE_HOST_PATH}:${BITCOIN_COOKIE_CONTAINER_PATH}:ro
-    - ${COOKIE_WRAPPER_PATH}:/usr/local/bin/cookie-wrapper.sh:ro
   ports:
     - "${HOST_BIND_PREFIX}${API_PORT}:8999"
-  entrypoint:
-    - /usr/local/bin/cookie-wrapper.sh
-    - /backend/start.sh
   networks:
     - ${MEMPOOL_NETWORK_NAME}

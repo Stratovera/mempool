@@ -104,15 +104,6 @@ prepare_network_env() {
     else
         export BITCOIND_DEPENDS_LINE="    - bitcoind"
     fi
-    export COOKIE_WRAPPER_PATH="${MEMPOOL_BASE_DIR}/cookie-wrapper.sh"
-    export BITCOIN_COOKIE_HOST_PATH="${MEMPOOL_DATA_DIR}/bitcoin/.cookie"
-    export BITCOIN_COOKIE_CONTAINER_PATH="/bitcoin/.cookie"
-    if [[ "${USE_EXTERNAL_BITCOIND}" == true ]]; then
-        export USE_RPC_COOKIE="false"
-    else
-        export USE_RPC_COOKIE="${RPC_COOKIE_AUTH}"
-    fi
-    export COOKIE_WAIT_SECONDS="${BITCOIN_COOKIE_WAIT_SECONDS:-30}"
 }
 
 render_template() {
