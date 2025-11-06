@@ -9,7 +9,8 @@ configure_firewall() {
     log_info "Configuring UFW rules"
     local network
     for network in $(get_networks); do
-        local upper="${network^^}"
+        local upper
+        upper="$(to_upper "$network")"
         local web_port_var="${upper}_WEB_PORT"
         local api_port_var="${upper}_API_PORT"
         ufw allow "${!web_port_var}" comment "mempool ${network} web" || true

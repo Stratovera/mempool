@@ -1,7 +1,10 @@
 rpcuser=${RPC_USER}
 rpcpassword=${RPC_PASS}
-rpcallowip=0.0.0.0/0
 rpcbind=0.0.0.0
+rpcbind=::
+rpcallowip=0.0.0.0/0
+rpcallowip=::/0
+rpcport=${RPC_PORT}
 server=1
 txindex=1
 zmqpubrawblock=tcp://0.0.0.0:28332

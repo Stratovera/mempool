@@ -20,12 +20,15 @@ MONITORING_SERVICE_TEMPLATES=(
 
 prepare_network_env() {
     local network="$1"
-    local upper="${network^^}"
+    ensure_rpc_credentials "$network"
+    local upper
+    upper="$(to_upper "$network")"
     export NETWORK="$network"
     export NETWORK_UPPER="$upper"
     export MEMPOOL_NETWORK_NAME="mempool-${network}"
     export MEMPOOL_DATA_DIR="${MEMPOOL_BASE_DIR}/${network}/data"
     export MEMPOOL_LOG_DIR="${MEMPOOL_BASE_DIR}/${network}/logs"
+    export ELECTRS_HOST="electrs-${network}"
     export BITCOIN_DATA_DIR="${MEMPOOL_DATA_DIR}/bitcoin"
     export MYSQL_DATA_DIR="${MEMPOOL_DATA_DIR}/mysql"
     export API_DATA_DIR="${MEMPOOL_DATA_DIR}/api"
@@ -38,11 +41,6 @@ prepare_network_env() {
     export ELECTRS_PORT="${!electrs_var}"
     local p2p_var="${upper}_P2P_PORT"
     export P2P_PORT="${!p2p_var}"
-    if [[ "$network" == "mainnet" ]]; then
-        export ELECTRS_COOKIE_PATH=".cookie"
-    else
-        export ELECTRS_COOKIE_PATH="${network}/.cookie"
-    fi
     local rpc_user
     rpc_user="$(get_rpc_user "$network")"
     export CORE_RPC_USER="$rpc_user"

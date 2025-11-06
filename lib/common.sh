@@ -84,3 +84,8 @@ prompt_yes_no() {
     answer="${answer:-$default}"
     [[ "$answer" =~ ^[Yy]$ ]]
 }
+
+to_upper() {
+    local value="$1"
+    printf '%s\n' "$value" | tr '[:lower:]' '[:upper:]'
+}
