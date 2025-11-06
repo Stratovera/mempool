@@ -13,6 +13,12 @@ api:
     ELECTRUM_PORT: 50001
     ELECTRUM_TLS_ENABLED: "false"
     DATABASE_HOST: database
+    DATABASE_NAME: ${DB_NAME}
+    DATABASE_USER: ${DB_USER}
+    DATABASE_PASS: ${DB_PASSWORD}
+    MYSQL_DATABASE: ${DB_NAME}
+    MYSQL_USER: ${DB_USER}
+    MYSQL_PASSWORD: ${DB_PASSWORD}
   volumes:
     - ./mempool-config.json:/backend/mempool-config.json:rw
     - ${API_DATA_DIR}:/backend/cache
