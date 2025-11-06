@@ -30,7 +30,11 @@ deploy_network() {
     create_mempool_config "$network"
     generate_docker_compose "$network"
 
-    (cd "${MEMPOOL_BASE_DIR}/${network}" && docker compose pull && docker compose up -d)
+    (
+        cd "${MEMPOOL_BASE_DIR}/${network}" \
+        && docker compose pull \
+        && docker compose up -d --force-recreate --remove-orphans
+    )
     log_success "${network} stack running"
 }
 
