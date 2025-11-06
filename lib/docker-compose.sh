@@ -42,7 +42,11 @@ prepare_network_env() {
     local rpc_pass
     rpc_pass="$(get_rpc_password "$network")"
     export CORE_RPC_PASS="$rpc_pass"
-    export CORE_RPC_HOST="$BITCOIND_RPC_HOST"
+    if [[ "${USE_EXTERNAL_BITCOIND}" == true ]]; then
+        export CORE_RPC_HOST="$BITCOIND_RPC_HOST"
+    else
+        export CORE_RPC_HOST="bitcoind-${network}"
+    fi
     local rpc_var="${upper}_RPC_PORT"
     export CORE_RPC_PORT="${!rpc_var}"
     local bind_var="${upper}_BIND_ADDRESS"
