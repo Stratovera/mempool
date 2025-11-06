@@ -7,8 +7,6 @@ electrs:
 ${BITCOIND_DEPENDS_LINE}
   entrypoint:
     - electrs
-  environment:
-    RUST_LOG: info
   command:
     - --network=${NETWORK}
     - --daemon-dir=/data/bitcoin
@@ -16,6 +14,7 @@ ${BITCOIND_DEPENDS_LINE}
     - --cookie=/data/bitcoin/${ELECTRS_COOKIE_PATH}
     - --db-dir=/data/db
     - --electrum-rpc-addr=0.0.0.0:50001
+    - -vv
   volumes:
     - ${ELECTRS_DATA_DIR}:/data
     - ${BITCOIN_DATA_DIR}:/data/bitcoin:ro
