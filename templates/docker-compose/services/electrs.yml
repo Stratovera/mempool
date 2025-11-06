@@ -7,6 +7,8 @@ electrs:
 ${BITCOIND_DEPENDS_LINE}
   entrypoint:
     - electrs
+  environment:
+    RUST_LOG: info
   command:
     - --network=${NETWORK}
     - --daemon-dir=/data/bitcoin
