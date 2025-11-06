@@ -45,7 +45,7 @@ prepare_network_env() {
     if [[ "${USE_EXTERNAL_BITCOIND}" == true ]]; then
         export CORE_RPC_HOST="$BITCOIND_RPC_HOST"
     else
-        export CORE_RPC_HOST="bitcoind-${network}"
+        export CORE_RPC_HOST="bitcoind"
     fi
     local rpc_var="${upper}_RPC_PORT"
     export CORE_RPC_PORT="${!rpc_var}"
