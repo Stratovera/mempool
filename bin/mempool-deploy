@@ -39,6 +39,7 @@ Commands:
   backup        Create backup via backup script
   monitoring    Render monitoring configs
   test          Run test suite
+  rotate-credentials  Regenerate RPC and database credentials
   help          Show this help
 EOF
 }
@@ -76,6 +77,9 @@ case "$command" in
         ;;
     monitoring)
         setup_monitoring
+        ;;
+    rotate-credentials)
+        rotate_credentials
         ;;
     test)
         run_tests

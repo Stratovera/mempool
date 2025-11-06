@@ -2,8 +2,14 @@ mariadb-exporter:
   image: prom/mysqld-exporter
   container_name: mariadb-exporter-${NETWORK}
   restart: unless-stopped
-  environment:
-    DATA_SOURCE_NAME: ${DB_USER}:${DB_PASSWORD}@(database:3306)/
+  command:
+    - /bin/sh
+    - -c
+    - |
+      export DATA_SOURCE_NAME="$(cat /run/secrets/${MARIADB_EXPORTER_DSN_SECRET_NAME})";
+      exec /bin/mysqld_exporter
+  secrets:
+    - source: ${MARIADB_EXPORTER_DSN_SECRET_NAME}
   depends_on:
     - database
   networks:

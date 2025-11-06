@@ -1,0 +1,30 @@
+#!/bin/sh
+
+set -eu
+
+USE_RPC_COOKIE=${USE_RPC_COOKIE:-false}
+if [ "${USE_RPC_COOKIE}" != "true" ]; then
+    exec "$@"
+fi
+
+COOKIE_SOURCE=${BITCOIN_COOKIE_PATH:?BITCOIN_COOKIE_PATH not set}
+WAIT_SECONDS=${BITCOIN_COOKIE_WAIT_SECONDS:-30}
+interval=0
+while [ ! -f "${COOKIE_SOURCE}" ] && [ "${interval}" -lt "${WAIT_SECONDS}" ]; do
+    sleep 1
+    interval=$((interval + 1))
+done
+
+if [ ! -f "${COOKIE_SOURCE}" ]; then
+    echo "cookie-wrapper: cookie file ${COOKIE_SOURCE} not available after ${WAIT_SECONDS}s" >&2
+    exit 1
+fi
+
+IFS=':' read -r COOKIE_USER COOKIE_PASS < "${COOKIE_SOURCE}"
+export CORE_RPC_USERNAME="${COOKIE_USER}"
+export CORE_RPC_PASSWORD="${COOKIE_PASS}"
+export BITCOIN_RPC_USER="${COOKIE_USER}"
+export BITCOIN_RPC_PASS="${COOKIE_PASS}"
+export RPC_USER="${COOKIE_USER}"
+export RPC_PASSWORD="${COOKIE_PASS}"
+exec "$@"

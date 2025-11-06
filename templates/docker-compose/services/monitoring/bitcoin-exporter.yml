@@ -5,7 +5,14 @@ bitcoin-exporter:
   environment:
     BITCOIN_RPC_HOST: ${CORE_RPC_HOST}
     BITCOIN_RPC_PORT: ${CORE_RPC_PORT}
-    BITCOIN_RPC_USER: ${CORE_RPC_USER}
-    BITCOIN_RPC_PASS: ${CORE_RPC_PASS}
+    BITCOIN_COOKIE_PATH: ${BITCOIN_COOKIE_CONTAINER_PATH}
+    USE_RPC_COOKIE: "${USE_RPC_COOKIE}"
+    BITCOIN_COOKIE_WAIT_SECONDS: "${COOKIE_WAIT_SECONDS}"
+  volumes:
+    - ${BITCOIN_COOKIE_HOST_PATH}:${BITCOIN_COOKIE_CONTAINER_PATH}:ro
+    - ${COOKIE_WRAPPER_PATH}:/usr/local/bin/cookie-wrapper.sh:ro
+  entrypoint:
+    - /usr/local/bin/cookie-wrapper.sh
+    - /monitor/bitcoind-monitor.py
   networks:
     - ${MEMPOOL_NETWORK_NAME}

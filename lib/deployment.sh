@@ -34,14 +34,52 @@ deploy_network() {
     log_success "${network} stack running"
 }
 
+update_database_credentials() {
+    local network="$1" old_db_password="$2" old_root_password="$3"
+    local compose_path="${MEMPOOL_BASE_DIR}/${network}/docker-compose.yml"
+    [[ -f "$compose_path" ]] || { log_warn "No compose file for ${network}; skipping database credential update"; return; }
+    [[ -n "$old_root_password" ]] || die "Cannot rotate database credentials without existing root password"
+    local statement
+    statement="ALTER USER '${DB_USER}'@'%' IDENTIFIED BY '${DB_PASSWORD}'; "
+    statement+="ALTER USER 'root'@'%' IDENTIFIED BY '${DB_ROOT_PASSWORD}'; "
+    statement+="FLUSH PRIVILEGES;"
+    if ! docker compose -f "$compose_path" exec -T database mysql -uroot -p"${old_root_password}" -e "$statement"; then
+        die "Failed to update database credentials for ${network}"
+    fi
+    audit_event "DB_CREDENTIAL_APPLIED" "network=${network}"
+}
+
+rotate_credentials() {
+    require_root
+    ensure_internal_credentials
+    audit_event "CREDENTIAL_ROTATION_STARTED" "networks=$(get_networks)"
+    local old_db_password=""
+    local old_root_password=""
+    rotate_db_credentials old_db_password old_root_password
+
+    local network
+    for network in $(get_networks); do
+        rotate_rpc_credentials "$network"
+    done
+
+    for network in $(get_networks); do
+        update_database_credentials "$network" "$old_db_password" "$old_root_password"
+        deploy_network "$network"
+    done
+
+    audit_event "CREDENTIAL_ROTATION_COMPLETED" "networks=$(get_networks)"
+    log_success "Credential rotation complete"
+}
+
 deploy_stack() {
     create_directories
+    ensure_internal_credentials
+    render_management_scripts
     setup_monitoring
     local network
     for network in $(get_networks); do
         deploy_network "$network"
     done
-    render_management_scripts
     configure_firewall
     log_success "Deployment completed"
 }
