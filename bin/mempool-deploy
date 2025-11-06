@@ -1,0 +1,90 @@
+#!/bin/bash
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+CONFIG_DIR="${ROOT_DIR}/config"
+
+LIB_ORDER=(
+    common
+    config
+    prerequisites
+    directories
+    bitcoind
+    mempool
+    docker-compose
+    firewall
+    monitoring
+    deployment
+)
+
+for lib in "${LIB_ORDER[@]}"; do
+    # shellcheck source=/dev/null
+    source "${ROOT_DIR}/lib/${lib}.sh"
+done
+
+load_config "${CONFIG_DIR}/defaults.conf"
+[[ -f "${CONFIG_DIR}/mempool-stack.conf" ]] && load_config "${CONFIG_DIR}/mempool-stack.conf"
+
+usage() {
+    cat <<'EOF'
+Usage: mempool-deploy <command>
+Commands:
+  install       Check prerequisites
+  config        Run interactive configuration
+  deploy        Deploy or update stack
+  start         Start services
+  stop          Stop services
+  status        Show service status
+  logs [net] [service]   Tail logs
+  backup        Create backup via backup script
+  monitoring    Render monitoring configs
+  test          Run test suite
+  help          Show this help
+EOF
+}
+
+command="${1:-help}"
+shift || true
+
+case "$command" in
+    install)
+        check_prerequisites
+        ;;
+    config)
+        interactive_config
+        ;;
+    deploy)
+        require_root
+        validate_config
+        check_prerequisites
+        deploy_stack
+        ;;
+    start)
+        start_stack
+        ;;
+    stop)
+        stop_stack
+        ;;
+    status)
+        show_status
+        ;;
+    logs)
+        show_logs "$@"
+        ;;
+    backup)
+        create_backup
+        ;;
+    monitoring)
+        setup_monitoring
+        ;;
+    test)
+        run_tests
+        ;;
+    help|--help|-h)
+        usage
+        ;;
+    *)
+        usage
+        exit 1
+        ;;
+esac

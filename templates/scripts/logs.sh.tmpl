@@ -1,0 +1,17 @@
+#!/bin/bash
+set -euo pipefail
+
+network="${1:-mainnet}"
+service="${2:-}"
+compose="${MEMPOOL_BASE_DIR}/${network}/docker-compose.yml"
+
+if [[ ! -f "$compose" ]]; then
+    echo "Unknown network $network"
+    exit 1
+fi
+
+if [[ -n "$service" ]]; then
+    docker compose -f "$compose" logs -f "$service"
+else
+    docker compose -f "$compose" logs -f
+fi

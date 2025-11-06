@@ -1,0 +1,12 @@
+#!/bin/bash
+set -euo pipefail
+
+NETWORKS="${MEMPOOL_NETWORKS}"
+
+for network in ${NETWORKS//,/ }; do
+    dir="${MEMPOOL_BASE_DIR}/${network}"
+    if [[ -d "$dir" ]]; then
+        echo "=== ${network} ==="
+        (cd "$dir" && docker compose ps)
+    fi
+done

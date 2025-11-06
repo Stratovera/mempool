@@ -1,0 +1,13 @@
+database:
+  image: ${MEMPOOL_DB_IMAGE}
+  container_name: mempool-db-${NETWORK}
+  restart: unless-stopped
+  environment:
+    MYSQL_DATABASE: ${DB_NAME}
+    MYSQL_USER: ${DB_USER}
+    MYSQL_PASSWORD: ${DB_PASSWORD}
+    MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+  volumes:
+    - ${MYSQL_DATA_DIR}:/var/lib/mysql
+  networks:
+    - ${MEMPOOL_NETWORK_NAME}
