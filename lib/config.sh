@@ -52,7 +52,7 @@ load_secret_value() {
 }
 
 ensure_persistent_secret() {
-    local var="$1" key="$2" length="${3:-48}"
+    local var="$1" key="$2" fallback="${3:-}" length="${4:-48}"
     local current="${!var:-}"
     if [[ -n "$current" ]]; then
         persist_secret_value "$key" "$current"
@@ -65,6 +65,14 @@ ensure_persistent_secret() {
         eval "${var}=\"${stored}\""
         return
     fi
+    if [[ -n "$fallback" ]]; then
+        eval "${var}=\"${fallback}\""
+        persist_secret_value "$key" "$fallback"
+        record_credential_rotation "$key"
+        audit_event "SECRET_LEGACY_USED" "key=${key}"
+        log_warn "Using legacy value for ${key}; rotate-credentials to replace."
+        return
+    fi
     local generated
     generated="$(generate_secret "$length")"
     persist_secret_value "$key" "$generated"
@@ -75,10 +83,10 @@ ensure_persistent_secret() {
 }
 
 ensure_internal_credentials() {
-    ensure_persistent_secret DB_PASSWORD "db-password"
-    ensure_persistent_secret DB_ROOT_PASSWORD "db-root-password"
-    validate_password_strength "$DB_PASSWORD" "DB_PASSWORD"
-    validate_password_strength "$DB_ROOT_PASSWORD" "DB_ROOT_PASSWORD"
+    ensure_persistent_secret DB_PASSWORD "db-password" "${DB_PASSWORD_FALLBACK:-}"
+    ensure_persistent_secret DB_ROOT_PASSWORD "db-root-password" "${DB_ROOT_PASSWORD_FALLBACK:-}"
+    [[ "${DB_PASSWORD}" == "${DB_PASSWORD_FALLBACK:-}" ]] || validate_password_strength "$DB_PASSWORD" "DB_PASSWORD"
+    [[ "${DB_ROOT_PASSWORD}" == "${DB_ROOT_PASSWORD_FALLBACK:-}" ]] || validate_password_strength "$DB_ROOT_PASSWORD" "DB_ROOT_PASSWORD"
     if [[ "${USE_EXTERNAL_BITCOIND}" == true ]]; then
         [[ -n "${BITCOIND_RPC_USER:-}" ]] || die "BITCOIND_RPC_USER required for external bitcoind"
         [[ -n "${BITCOIND_RPC_PASS:-}" ]] || die "BITCOIND_RPC_PASS required for external bitcoind"
