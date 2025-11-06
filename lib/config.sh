@@ -9,7 +9,7 @@ USER_CONFIG_FILE="${CONFIG_DIR}/mempool-stack.conf"
 load_config() {
     local file="$1"
     [[ -f "$file" ]] || return 0
-    # shellcheck source=../config/defaults.conf
+    # shellcheck source=../config/shellcheck-env.sh
     # shellcheck disable=SC1090
     set -o allexport
     source "$file"
