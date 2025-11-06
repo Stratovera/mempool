@@ -5,7 +5,7 @@ bitcoind:
   stop_grace_period: 1m
   volumes:
     - ${BITCOIN_DATA_DIR}:/home/bitcoin/.bitcoin
-    - ./bitcoin.conf:/home/bitcoin/.bitcoin/bitcoin.conf:ro
+    - ./bitcoin.conf:/home/bitcoin/.bitcoin/bitcoin.conf:rw
   command: >
     bitcoind -conf=/home/bitcoin/.bitcoin/bitcoin.conf
   ports:
