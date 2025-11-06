@@ -10,7 +10,7 @@ load_config() {
     local file="$1"
     [[ -f "$file" ]] || return 0
     # shellcheck source=/dev/null
-    # shellcheck disable=SC2154
+    # shellcheck disable=SC1090,SC2154
     set -o allexport
     source "$file"
     set +o allexport
