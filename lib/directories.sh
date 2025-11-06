@@ -33,10 +33,11 @@ determine_bitcoind_ids() {
         return
     fi
     if command_exists docker; then
-        local id_output
-        if id_output="$(docker run --rm "${BITCOIND_IMAGE}" sh -c 'id -u && id -g' 2>/dev/null)"; then
-            BITCOIND_UID="$(echo "$id_output" | sed -n '1p')"
-            BITCOIND_GID="$(echo "$id_output" | sed -n '2p')"
+        local uid gid
+        if uid="$(docker run --rm --entrypoint /usr/bin/id "${BITCOIND_IMAGE}" -u 2>/dev/null)" \
+            && gid="$(docker run --rm --entrypoint /usr/bin/id "${BITCOIND_IMAGE}" -g 2>/dev/null)"; then
+            BITCOIND_UID="$uid"
+            BITCOIND_GID="$gid"
             return
         fi
     fi
@@ -86,7 +87,9 @@ create_network_directories() {
     mkdir -p "${net_dir}/monitoring/prometheus"
     mkdir -p "${net_dir}/monitoring/grafana/provisioning/datasources"
     mkdir -p "${net_dir}/monitoring/grafana/provisioning/dashboards"
-    rm -f "${net_dir}/mempool-config.json"
+    if [[ -e "${net_dir}/mempool-config.json" ]]; then
+        rm -rf "${net_dir}/mempool-config.json"
+    fi
 
     log_info "Prepared directories for ${network}"
 }
