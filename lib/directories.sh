@@ -34,12 +34,12 @@ create_network_directories() {
 
     if [[ "${USE_EXTERNAL_BITCOIND}" != true ]]; then
         mkdir -p "${data_dir}/bitcoin"
-        chown -R 101:101 "${data_dir}/bitcoin"
+        chown -R 101:101 "${data_dir}/bitcoin" || true
     fi
 
-    chown -R 999:999 "${data_dir}/mysql"
-    chown -R 1000:1000 "${data_dir}/api" "${data_dir}/electrs"
-    chmod -R 750 "${net_dir}"
+    chown -R 999:999 "${data_dir}/mysql" || true
+    chown -R 1000:1000 "${data_dir}/api" "${data_dir}/electrs" || true
+    chmod 750 "${net_dir}" || true
 
     mkdir -p "${net_dir}/monitoring/prometheus"
     mkdir -p "${net_dir}/monitoring/grafana/provisioning/datasources"
