@@ -122,20 +122,6 @@ record_credential_rotation() {
     umask "$old_umask"
 }
 
-rotate_db_credentials() {
-    local -n db_prev_ref="$1"
-    local -n root_prev_ref="$2"
-    db_prev_ref="$(load_secret_value "db-password" 2>/dev/null || echo "${DB_PASSWORD:-}")"
-    root_prev_ref="$(load_secret_value "db-root-password" 2>/dev/null || echo "${DB_ROOT_PASSWORD:-}")"
-    DB_PASSWORD="$(generate_secret 48)"
-    DB_ROOT_PASSWORD="$(generate_secret 48)"
-    persist_secret_value "db-password" "$DB_PASSWORD"
-    persist_secret_value "db-root-password" "$DB_ROOT_PASSWORD"
-    record_credential_rotation "db-password"
-    record_credential_rotation "db-root-password"
-    audit_event "DB_CREDENTIAL_ROTATED" "type=application"
-    log_info "Generated new database credentials"
-}
 
 interactive_config() {
     log_info "Interactive configuration"
