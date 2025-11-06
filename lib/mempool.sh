@@ -12,7 +12,7 @@ create_mempool_config() {
     [[ "${USE_EXTERNAL_BITCOIND}" == true ]] && rpc_host="$BITCOIND_RPC_HOST"
     local rpc_port_var="${upper}_RPC_PORT"
     local rpc_port="${!rpc_port_var}"
-    local electrum_host="electrs"
+    local electrum_host="electrs-${network}"
 
     ensure_rpc_credentials "$network"
 

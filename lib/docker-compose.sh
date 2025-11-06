@@ -28,7 +28,7 @@ prepare_network_env() {
     export MEMPOOL_NETWORK_NAME="mempool-${network}"
     export MEMPOOL_DATA_DIR="${MEMPOOL_BASE_DIR}/${network}/data"
     export MEMPOOL_LOG_DIR="${MEMPOOL_BASE_DIR}/${network}/logs"
-    export ELECTRS_HOST="electrs"
+    export ELECTRS_HOST="electrs-${network}"
     export BITCOIN_DATA_DIR="${MEMPOOL_DATA_DIR}/bitcoin"
     export MYSQL_DATA_DIR="${MEMPOOL_DATA_DIR}/mysql"
     export API_DATA_DIR="${MEMPOOL_DATA_DIR}/api"
