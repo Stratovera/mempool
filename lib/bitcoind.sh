@@ -94,15 +94,9 @@ create_bitcoind_config() {
         [[ -z "$cidr" ]] && continue
         rpc_allow_lines+="rpcallowip=${cidr}"$'\n'
     done
-    local auth_block=""
-    if [[ "${RPC_COOKIE_AUTH}" == true ]]; then
-        auth_block=$'rpccookiefile=/data/bitcoin/.cookie'
-    else
-        auth_block=$"rpcuser=$(get_rpc_user "$network")"$'\n'
-        auth_block+="rpcpassword=$(get_rpc_password "$network")"
-    fi
 
-    RPC_AUTH_BLOCK="$auth_block" \
+    RPC_USER="$(get_rpc_user "$network")" \
+    RPC_PASS="$(get_rpc_password "$network")" \
     RPC_PORT="$rpc_port" \
     NETWORK_CONFIG="$network_flag" \
     RPC_ALLOW_LINES="$rpc_allow_lines" \

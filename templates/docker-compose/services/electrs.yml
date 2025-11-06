@@ -11,7 +11,7 @@ ${BITCOIND_DEPENDS_LINE}
     - --network=${NETWORK}
     - --daemon-dir=/data/bitcoin
     - --daemon-rpc-addr=${CORE_RPC_HOST}:${CORE_RPC_PORT}
-    - --cookie-file=/data/bitcoin/.cookie
+    - --cookie=${CORE_RPC_USER}:${CORE_RPC_PASS}
     - --db-dir=/data/db
     - --electrum-rpc-addr=0.0.0.0:50001
     - -vv
