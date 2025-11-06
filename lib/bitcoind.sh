@@ -22,6 +22,15 @@ get_rpc_password() {
     eval "echo \${RPC_PASS_${network}:-}"
 }
 
+ensure_rpc_credentials() {
+    local network="$1"
+    local user
+    user="$(get_rpc_user "$network")"
+    if [[ -z "$user" ]]; then
+        generate_rpc_credentials "$network"
+    fi
+}
+
 generate_rpc_credentials() {
     local network="$1"
     if [[ "${USE_EXTERNAL_BITCOIND}" == true ]]; then
