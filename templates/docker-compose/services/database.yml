@@ -5,8 +5,11 @@ database:
   environment:
     MYSQL_DATABASE: ${DB_NAME}
     MYSQL_USER: ${DB_USER}
-    MYSQL_PASSWORD: ${DB_PASSWORD}
-    MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    MYSQL_PASSWORD_FILE: /run/secrets/${DB_PASSWORD_SECRET_NAME}
+    MYSQL_ROOT_PASSWORD_FILE: /run/secrets/${DB_ROOT_PASSWORD_SECRET_NAME}
+  secrets:
+    - source: ${DB_PASSWORD_SECRET_NAME}
+    - source: ${DB_ROOT_PASSWORD_SECRET_NAME}
   volumes:
     - ${MYSQL_DATA_DIR}:/var/lib/mysql
   networks:

@@ -18,6 +18,35 @@ MONITORING_SERVICE_TEMPLATES=(
     monitoring/mariadb-exporter
 )
 
+ensure_secret_dir() {
+    local dir="$1"
+    if [[ ! -d "$dir" ]]; then
+        mkdir -p "$dir"
+        chmod 700 "$dir"
+    fi
+}
+
+write_secret_file() {
+    local network="$1" name="$2" value="$3"
+    local dir="${MEMPOOL_BASE_DIR}/${network}/secrets"
+    ensure_secret_dir "$dir"
+    local file="${dir}/${name}"
+    local old_umask
+    old_umask=$(umask)
+    umask 077
+    if [[ -f "$file" ]]; then
+        secure_delete "$file"
+    fi
+    # Avoid partially-written files if interrupted
+    local tmp_file
+    tmp_file="$(mktemp "${file}.XXXXXX")"
+    printf '%s' "$value" > "$tmp_file"
+    chmod 600 "$tmp_file"
+    mv "$tmp_file" "$file"
+    umask "$old_umask"
+    echo "$file"
+}
+
 prepare_network_env() {
     local network="$1"
     ensure_rpc_credentials "$network"
@@ -47,6 +76,15 @@ prepare_network_env() {
     local rpc_pass
     rpc_pass="$(get_rpc_password "$network")"
     export CORE_RPC_PASS="$rpc_pass"
+    export DB_PASSWORD_SECRET_NAME="db-password-${network}"
+    export DB_PASSWORD_SECRET_FILE
+    DB_PASSWORD_SECRET_FILE="$(write_secret_file "$network" "${DB_PASSWORD_SECRET_NAME}" "${DB_PASSWORD}")"
+    export DB_ROOT_PASSWORD_SECRET_NAME="db-root-password-${network}"
+    export DB_ROOT_PASSWORD_SECRET_FILE
+    DB_ROOT_PASSWORD_SECRET_FILE="$(write_secret_file "$network" "${DB_ROOT_PASSWORD_SECRET_NAME}" "${DB_ROOT_PASSWORD}")"
+    export MARIADB_EXPORTER_DSN_SECRET_NAME="db-exporter-dsn-${network}"
+    export MARIADB_EXPORTER_DSN_SECRET_FILE
+    MARIADB_EXPORTER_DSN_SECRET_FILE="$(write_secret_file "$network" "${MARIADB_EXPORTER_DSN_SECRET_NAME}" "${DB_USER}:${DB_PASSWORD}@(database:3306)/")"
     if [[ "${USE_EXTERNAL_BITCOIND}" == true ]]; then
         export CORE_RPC_HOST="$BITCOIND_RPC_HOST"
     else
@@ -66,6 +104,15 @@ prepare_network_env() {
     else
         export BITCOIND_DEPENDS_LINE="    - bitcoind"
     fi
+    export COOKIE_WRAPPER_PATH="${MEMPOOL_BASE_DIR}/cookie-wrapper.sh"
+    export BITCOIN_COOKIE_HOST_PATH="${MEMPOOL_DATA_DIR}/bitcoin/.cookie"
+    export BITCOIN_COOKIE_CONTAINER_PATH="/bitcoin/.cookie"
+    if [[ "${USE_EXTERNAL_BITCOIND}" == true ]]; then
+        export USE_RPC_COOKIE="false"
+    else
+        export USE_RPC_COOKIE="${RPC_COOKIE_AUTH}"
+    fi
+    export COOKIE_WAIT_SECONDS="${BITCOIN_COOKIE_WAIT_SECONDS:-30}"
 }
 
 render_template() {
@@ -105,5 +152,6 @@ generate_docker_compose() {
         fi
     } > "$compose_path"
 
+    write_checksum_file "$compose_path"
     log_success "Generated docker-compose.yml for ${network}"
 }

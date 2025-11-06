@@ -5,6 +5,7 @@ set -euo pipefail
 
 CONFIG_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../config" && pwd)"
 USER_CONFIG_FILE="${CONFIG_DIR}/mempool-stack.conf"
+SECRET_STORE_DIR="${CONFIG_DIR}/.secrets"
 
 load_config() {
     local file="$1"
@@ -14,6 +15,118 @@ load_config() {
     # shellcheck disable=SC1090
     source "$file"
     set +o allexport
+}
+
+secret_store_path() {
+    local key="$1"
+    echo "${SECRET_STORE_DIR}/${key}"
+}
+
+persist_secret_value() {
+    local key="$1" value="$2"
+    [[ -n "$value" ]] || return 0
+    mkdir -p "$SECRET_STORE_DIR"
+    chmod 700 "$SECRET_STORE_DIR"
+    local file
+    file="$(secret_store_path "$key")"
+    if [[ -f "$file" ]]; then
+        secure_delete "$file"
+    fi
+    local old_umask
+    old_umask=$(umask)
+    umask 077
+    local tmp
+    tmp="$(mktemp "${file}.XXXXXX")"
+    printf '%s' "$value" > "$tmp"
+    chmod 600 "$tmp"
+    mv "$tmp" "$file"
+    umask "$old_umask"
+}
+
+load_secret_value() {
+    local key="$1"
+    local file
+    file="$(secret_store_path "$key")"
+    [[ -f "$file" ]] || return 1
+    cat "$file"
+}
+
+ensure_persistent_secret() {
+    local var="$1" key="$2" length="${3:-48}"
+    local current="${!var:-}"
+    if [[ -n "$current" ]]; then
+        persist_secret_value "$key" "$current"
+        record_credential_rotation "$key"
+        audit_event "SECRET_PERSISTED" "key=${key},source=config"
+        return
+    fi
+    local stored
+    if stored="$(load_secret_value "$key")"; then
+        eval "${var}=\"${stored}\""
+        return
+    fi
+    local generated
+    generated="$(generate_secret "$length")"
+    persist_secret_value "$key" "$generated"
+    eval "${var}=\"${generated}\""
+    record_credential_rotation "$key"
+    audit_event "SECRET_GENERATED" "key=${key}"
+    log_info "Generated random value for ${key//-/ }"
+}
+
+ensure_internal_credentials() {
+    ensure_persistent_secret DB_PASSWORD "db-password"
+    ensure_persistent_secret DB_ROOT_PASSWORD "db-root-password"
+    validate_password_strength "$DB_PASSWORD" "DB_PASSWORD"
+    validate_password_strength "$DB_ROOT_PASSWORD" "DB_ROOT_PASSWORD"
+    if [[ "${USE_EXTERNAL_BITCOIND}" == true ]]; then
+        [[ -n "${BITCOIND_RPC_USER:-}" ]] || die "BITCOIND_RPC_USER required for external bitcoind"
+        [[ -n "${BITCOIND_RPC_PASS:-}" ]] || die "BITCOIND_RPC_PASS required for external bitcoind"
+        validate_password_strength "$BITCOIND_RPC_PASS" "BITCOIND_RPC_PASS"
+    fi
+}
+
+credential_state_dir() {
+    echo "${MEMPOOL_BASE_DIR}/.state/credentials"
+}
+
+record_credential_rotation() {
+    local key="$1"
+    local dir
+    dir="$(credential_state_dir)"
+    if ! mkdir -p "$dir"; then
+        log_warn "Unable to create credential state directory ${dir}"
+        return
+    fi
+    chmod 700 "$dir" || log_warn "Unable to set permissions on ${dir}"
+    local file="${dir}/${key}"
+    local timestamp
+    timestamp="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+    local old_umask
+    old_umask=$(umask)
+    umask 077
+    if ! printf '%s\n' "$timestamp" > "$file"; then
+        log_warn "Unable to write credential state for ${key}"
+        umask "$old_umask"
+        return
+    fi
+    chmod 600 "$file" || log_warn "Unable to secure credential state file ${file}"
+    umask "$old_umask"
+}
+
+rotate_db_credentials() {
+    local -n db_prev_ref="$1"
+    local -n root_prev_ref="$2"
+    db_prev_ref="$(load_secret_value "db-password" 2>/dev/null || echo "${DB_PASSWORD:-}")"
+    root_prev_ref="$(load_secret_value "db-root-password" 2>/dev/null || echo "${DB_ROOT_PASSWORD:-}")"
+    DB_PASSWORD="$(generate_secret 48)"
+    DB_ROOT_PASSWORD="$(generate_secret 48)"
+    persist_secret_value "db-password" "$DB_PASSWORD"
+    persist_secret_value "db-root-password" "$DB_ROOT_PASSWORD"
+    record_credential_rotation "db-password"
+    record_credential_rotation "db-root-password"
+    audit_event "DB_CREDENTIAL_ROTATED" "type=application"
+    log_info "Generated new database credentials"
 }
 
 interactive_config() {
@@ -72,8 +185,11 @@ interactive_config() {
         BITCOIND_RPC_PORT="${ans:-$BITCOIND_RPC_PORT}"
         read -r -p "External RPC username [${BITCOIND_RPC_USER}]: " ans || true
         BITCOIND_RPC_USER="${ans:-$BITCOIND_RPC_USER}"
-        read -r -p "External RPC password [hidden]: " ans || true
-        BITCOIND_RPC_PASS="${ans:-$BITCOIND_RPC_PASS}"
+        if [[ -n "${BITCOIND_RPC_PASS:-}" ]] && prompt_yes_no "Keep existing external RPC password?" "y"; then
+            :
+        else
+            prompt_secure_password "External RPC password" BITCOIND_RPC_PASS
+        fi
     else
         USE_EXTERNAL_BITCOIND=false
     fi
@@ -95,10 +211,12 @@ MAINNET_WEB_PORT=${MAINNET_WEB_PORT}
 MAINNET_API_PORT=${MAINNET_API_PORT}
 MAINNET_BIND_ADDRESS="${MAINNET_BIND_ADDRESS}"
 SIGNET_WEB_PORT=${SIGNET_WEB_PORT}
-SIGNET_API_PORT=${SIGNET_API_PORT}
-SIGNET_BIND_ADDRESS="${SIGNET_BIND_ADDRESS}"
+    SIGNET_API_PORT=${SIGNET_API_PORT}
+    SIGNET_BIND_ADDRESS="${SIGNET_BIND_ADDRESS}"
 EOF
 
+    ensure_internal_credentials
+    log_info "Database credentials stored securely under ${SECRET_STORE_DIR}"
     log_success "Configuration saved to ${USER_CONFIG_FILE}"
 }
 
@@ -137,6 +255,13 @@ validate_config() {
         [[ -n "${BITCOIND_RPC_USER}" ]] || die "BITCOIND_RPC_USER required for external bitcoind"
         [[ -n "${BITCOIND_RPC_PASS}" ]] || die "BITCOIND_RPC_PASS required for external bitcoind"
     fi
+
+    IFS=',' read -ra __cidrs <<<"$RPC_ALLOWED_CIDRS"
+    for cidr in "${__cidrs[@]}"; do
+        cidr="${cidr// /}"
+        [[ -z "$cidr" ]] && continue
+        validate_cidr "$cidr" "RPC_ALLOWED_CIDRS"
+    done
 }
 
 get_networks() {
