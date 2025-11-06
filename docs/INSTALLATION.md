@@ -29,6 +29,7 @@
 ## Post-Install
 - `make status` — confirm containers are healthy
 - `make logs NETWORK=mainnet SERVICE=api` — tail a service
+- `curl http://<MAINNET_BIND_ADDRESS>:<MAINNET_WEB_PORT>/api/v1/statistics/2h` — verify the nginx proxy reaches the backend (repeat for signet)
 - `make monitoring` — re-render Prometheus/Grafana configs after edits
 
 ## Upgrades
