@@ -44,6 +44,16 @@ Repeat with `SIGNET_` prefixes if desired. After editing the config, run `sudo m
 ## Database
 `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_ROOT_PASSWORD` control the MariaDB container and exporter connection string.
 
+### Secrets & Rotation
+- Secrets are stored outside of Git inside `config/.secrets/` (`db-password`, `db-root-password`). `sudo make deploy` copies them into `$MEMPOOL_BASE_DIR/<network>/secrets/` so Docker can mount them as files (required for MariaDB, API, exporters, etc.).
+- If the secret files are missing, the deploy script writes the fallback values from `config/defaults.conf` (`DB_PASSWORD_FALLBACK`, `DB_ROOT_PASSWORD_FALLBACK`) and logs a warning so you can rotate them later.
+- To rotate credentials safely run:
+  ```bash
+  sudo bin/mempool-deploy rotate-credentials
+  ```
+  The command updates MariaDB with new passwords before rewriting the secret files, rotates per-network RPC credentials, then redeploys all services so every container picks up the new values atomically.
+- Keep a backup of `config/.secrets/` if you snapshot the host; losing these files means the next deploy will fall back to defaults until you rotate again.
+
 ## Advanced
 - Update image tags (`MEMPOOL_WEB_IMAGE`, `BITCOIND_IMAGE`, etc.) to pin releases.
 - Edit template files in `templates/` to customize Compose fragments, Prometheus scrape jobs, or helper scripts.
