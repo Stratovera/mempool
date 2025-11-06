@@ -1,5 +1,6 @@
 #!/bin/bash
 # Stub variables for ShellCheck static analysis only.
+# shellcheck disable=SC2034
 
 export MEMPOOL_BASE_DIR="/opt/mempool"
 export MEMPOOL_NETWORKS="mainnet,signet"
