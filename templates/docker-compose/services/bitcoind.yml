@@ -4,10 +4,10 @@ bitcoind:
   restart: unless-stopped
   stop_grace_period: 1m
   volumes:
-    - ${BITCOIN_DATA_DIR}:/var/lib/bitcoin
-    - ./bitcoin.conf:/var/lib/bitcoin/bitcoin.conf:ro
+    - ${BITCOIN_DATA_DIR}:/home/bitcoin/.bitcoin
+    - ./bitcoin.conf:/home/bitcoin/.bitcoin/bitcoin.conf:ro
   command: >
-    bitcoind -conf=/var/lib/bitcoin/bitcoin.conf
+    bitcoind -conf=/home/bitcoin/.bitcoin/bitcoin.conf
   ports:
     - "${HOST_BIND_PREFIX}${CORE_RPC_PORT}:${CORE_RPC_PORT}"
   networks:
