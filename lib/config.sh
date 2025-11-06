@@ -94,7 +94,8 @@ validate_config() {
             mainnet|signet) ;;
             *) die "Unsupported network: $network" ;;
         esac
-        local upper="${network^^}"
+        local upper
+        upper="$(to_upper "$network")"
         local web_var="${upper}_WEB_PORT"
         local api_var="${upper}_API_PORT"
         local bind_var="${upper}_BIND_ADDRESS"

@@ -16,7 +16,9 @@ create_grafana_config() {
     local datasources_template="templates/grafana/datasources.yml.tmpl"
     local dashboards_template="templates/grafana/dashboards.yml.tmpl"
     local base_dir="${MEMPOOL_BASE_DIR}/${network}/monitoring/grafana/provisioning"
-    local prom_var="${network^^}_PROMETHEUS_PORT"
+    local upper
+    upper="$(to_upper "$network")"
+    local prom_var="${upper}_PROMETHEUS_PORT"
     local prometheus_port="${!prom_var}"
 
     NETWORK="$network" \

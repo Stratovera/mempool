@@ -82,6 +82,10 @@ create_bitcoind_config() {
     local output="${MEMPOOL_BASE_DIR}/${network}/bitcoin.conf"
 
     generate_rpc_credentials "$network"
+    local upper
+    upper="$(to_upper "$network")"
+    local rpc_port_var="${upper}_RPC_PORT"
+    local rpc_port="${!rpc_port_var}"
     local network_flag="mainnet=1"
     if [[ "$network" == "signet" ]]; then
         network_flag="signet=1"
@@ -89,6 +93,7 @@ create_bitcoind_config() {
 
     RPC_USER="$(get_rpc_user "$network")" \
     RPC_PASS="$(get_rpc_password "$network")" \
+    RPC_PORT="$rpc_port" \
     NETWORK_CONFIG="$network_flag" \
     envsubst < "$template" > "$output"
 
