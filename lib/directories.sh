@@ -15,8 +15,11 @@ check_disk_space() {
 ensure_fresh_network() {
     local network="$1"
     local net_dir="${MEMPOOL_BASE_DIR}/${network}"
-    if [[ -f "${net_dir}/docker-compose.yml" && "${ALLOW_REDEPLOY:-false}" != true ]]; then
-        die "Existing deployment detected for ${network} at ${net_dir} (set ALLOW_REDEPLOY=true to override)"
+    [[ -d "$net_dir" ]] || return
+    if [[ -f "${net_dir}/docker-compose.yml" && "${FORCE_CLEAN_DEPLOY:-false}" == true ]]; then
+        log_warn "FORCE_CLEAN_DEPLOY=true; removing ${net_dir} before redeploy"
+        rm -rf "${net_dir}"
+        return
     fi
 }
 
