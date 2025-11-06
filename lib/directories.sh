@@ -34,7 +34,7 @@ create_network_directories() {
 
     if [[ "${USE_EXTERNAL_BITCOIND}" != true ]]; then
         mkdir -p "${data_dir}/bitcoin"
-        chown -R 1000:1000 "${data_dir}/bitcoin"
+        chown -R 101:101 "${data_dir}/bitcoin"
     fi
 
     chown -R 999:999 "${data_dir}/mysql"
