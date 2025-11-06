@@ -98,8 +98,14 @@ validate_config() {
         local web_var="${upper}_WEB_PORT"
         local api_var="${upper}_API_PORT"
         local bind_var="${upper}_BIND_ADDRESS"
+        local electrs_var="${upper}_ELECTRS_PORT"
+        local p2p_var="${upper}_P2P_PORT"
+        local rpc_var="${upper}_RPC_PORT"
         validate_port "${!web_var}" "${network} web port"
         validate_port "${!api_var}" "${network} api port"
+        validate_port "${!electrs_var}" "${network} electrs port"
+        validate_port "${!p2p_var}" "${network} p2p port"
+        validate_port "${!rpc_var}" "${network} rpc port"
         validate_ip "${!bind_var}" "${network} bind address"
     done
 

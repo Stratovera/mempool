@@ -22,6 +22,8 @@ Artifacts live under `$MEMPOOL_BASE_DIR/<network>/` (default `/opt/mempool`). He
 
 Need to pin each network to a specific host IP? Set `MAINNET_BIND_ADDRESS` and `SIGNET_BIND_ADDRESS` in `config/mempool-stack.conf`. During template rendering, those values become host-side bindings (e.g., `192.0.2.10:8080:8080`) so mainnet and signet can listen on different addresses even if they share the same ports.
 
+Exposed ports for bitcoind and electrs are controlled via the per-network config keys (`<NETWORK>_RPC_PORT`, `<NETWORK>_P2P_PORT`, `<NETWORK>_ELECTRS_PORT`), so you can align them with firewall rules or external reverse proxies without touching the templates.
+
 ## Repository Layout
 ```
 bin/                # mempool-deploy CLI entrypoint

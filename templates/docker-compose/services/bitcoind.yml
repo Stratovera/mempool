@@ -10,5 +10,6 @@ bitcoind:
     bitcoind -conf=/home/bitcoin/.bitcoin/bitcoin.conf
   ports:
     - "${HOST_BIND_PREFIX}${CORE_RPC_PORT}:${CORE_RPC_PORT}"
+    - "${HOST_BIND_PREFIX}${P2P_PORT}:${P2P_PORT}"
   networks:
     - ${MEMPOOL_NETWORK_NAME}
