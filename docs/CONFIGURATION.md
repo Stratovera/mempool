@@ -20,6 +20,27 @@ Notes:
 - The frontend publishes `<NETWORK>_WEB_PORT` and proxies `/api/*` to the backend container. `<NETWORK>_API_PORT` still exposes the backend directly for low-level debugging but is not needed for the UI to function.
 - Because each network can set its own `*_BIND_ADDRESS`, you can reuse the same port numbers for mainnet and signet while pinning them to different host IPs.
 
+## Bitcoind Tuning Overrides
+Optional per-network knobs map directly to `bitcoin.conf`. Leave them blank to use Bitcoin Core defaults:
+
+- `<NETWORK>_BITCOIND_DBCACHE` — value (MB) for `dbcache`
+- `<NETWORK>_BITCOIND_MAX_CONNECTIONS` — upper bound for inbound + outbound peers
+- `<NETWORK>_BITCOIND_MAX_OUTBOUND` — limit for outbound peers
+- `<NETWORK>_BITCOIND_MAX_UPLOAD_TARGET` — `maxuploadtarget` in MB/day (`0` disables the cap)
+- `<NETWORK>_BITCOIND_PARALLELISM` — threads for script verification (`par`)
+
+Example high-throughput settings:
+
+```bash
+MAINNET_BITCOIND_DBCACHE=8192
+MAINNET_BITCOIND_MAX_CONNECTIONS=256
+MAINNET_BITCOIND_MAX_OUTBOUND=32
+MAINNET_BITCOIND_MAX_UPLOAD_TARGET=0
+MAINNET_BITCOIND_PARALLELISM=32
+```
+
+Repeat with `SIGNET_` prefixes if desired. After editing the config, run `sudo make deploy` to regenerate `bitcoin.conf`.
+
 ## Database
 `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_ROOT_PASSWORD` control the MariaDB container and exporter connection string.
 
