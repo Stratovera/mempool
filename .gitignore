@@ -26,3 +26,4 @@ backups/
 *.log
 node_modules/
 docker-compose.override.yml
+review/
