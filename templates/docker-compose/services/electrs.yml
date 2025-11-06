@@ -11,13 +11,13 @@ ${BITCOIND_DEPENDS_LINE}
     - --network=${NETWORK}
     - --daemon-dir=/data/bitcoin
     - --daemon-rpc-addr=${CORE_RPC_HOST}:${CORE_RPC_PORT}
-    - --cookie-file=/data/bitcoin/.cookie
+    - --cookie-file=/data/bitcoin/${ELECTRS_COOKIE_PATH}
     - --db-dir=/data/db
     - --electrum-rpc-addr=0.0.0.0:50001
   volumes:
     - ${ELECTRS_DATA_DIR}:/data
     - ${BITCOIN_DATA_DIR}:/data/bitcoin:ro
   ports:
-    - "${ELECTRS_PORT}:50001"
+    - "${HOST_BIND_PREFIX}${ELECTRS_PORT}:50001"
   networks:
     - ${MEMPOOL_NETWORK_NAME}

@@ -36,6 +36,11 @@ prepare_network_env() {
     export API_PORT="${!API_PORT_VAR}"
     local electrs_var="${upper}_ELECTRS_PORT"
     export ELECTRS_PORT="${!electrs_var}"
+    if [[ "$network" == "mainnet" ]]; then
+        export ELECTRS_COOKIE_PATH=".cookie"
+    else
+        export ELECTRS_COOKIE_PATH="${network}/.cookie"
+    fi
     local rpc_user
     rpc_user="$(get_rpc_user "$network")"
     export CORE_RPC_USER="$rpc_user"
