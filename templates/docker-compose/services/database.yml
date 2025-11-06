@@ -2,6 +2,14 @@ database:
   image: ${MEMPOOL_DB_IMAGE}
   container_name: mempool-db-${NETWORK}
   restart: unless-stopped
+  entrypoint:
+    - bash
+    - -lc
+    - |
+      if [[ ! -e /usr/bin/mysql && -e /usr/bin/mariadb ]]; then
+        ln -sf /usr/bin/mariadb /usr/bin/mysql
+      fi
+      exec docker-entrypoint.sh mariadbd
   environment:
     MYSQL_DATABASE: ${DB_NAME}
     MYSQL_USER: ${DB_USER}
