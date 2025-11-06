@@ -15,8 +15,13 @@ api:
     DATABASE_USER: ${DB_USER}
     DATABASE_PASS: ${DB_PASSWORD}
     DATABASE_NAME: ${DB_NAME}
+    MYSQL_HOST: database
+    MYSQL_PORT: 3306
+    MYSQL_DATABASE: ${DB_NAME}
+    MYSQL_USER: ${DB_USER}
+    MYSQL_PASSWORD: ${DB_PASSWORD}
   volumes:
-    - ./mempool-config.json:/backend/mempool-config.json:ro
+    - ./mempool-config.json:/backend/mempool-config.json:rw
     - ${API_DATA_DIR}:/backend/cache
   ports:
     - "${HOST_BIND_PREFIX}${API_PORT}:8999"
